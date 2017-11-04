@@ -1,14 +1,21 @@
 package com.ljc.coolweather.util;
 
 import android.text.TextUtils;
+import android.util.Log;
 
+import com.google.gson.Gson;
 import com.ljc.coolweather.db.City;
 import com.ljc.coolweather.db.County;
 import com.ljc.coolweather.db.Province;
+import com.ljc.coolweather.gson.Forecast;
+import com.ljc.coolweather.gson.Weather;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Administrator on 2017/11/2 0002.
@@ -82,5 +89,38 @@ public class Utility {
             }
         }
         return false;
+    }
+    /*
+    将返回的JSON数据解析成Weather实体类
+     */
+    public static Weather handleWeatherResponse(String response){
+        try{
+            JSONObject jsonObject = new JSONObject(response);
+            JSONArray jsonArray = jsonObject.getJSONArray("HeWeather");
+            String weatherContent = jsonArray.getJSONObject(0).toString();
+            /*
+            JSONArray forecastArray = new JSONObject(weatherContent).getJSONArray("daily_forecast");
+            List<Forecast> forecastList = new ArrayList<>();
+            Forecast forecast = null;
+            for (int i =0;i<forecastArray.length();i++){
+                JSONObject forecastObject = forecastArray.getJSONObject(i);
+                forecast = new Forecast();
+                forecast.date = forecastObject.getString("date");
+                JSONObject tmpObject = forecastObject.getJSONObject("tmp");
+                JSONObject condObject = forecastObject.getJSONObject("cond");
+                forecast.temperature.max = tmpObject.getString("max");
+                forecast.temperature.min = tmpObject.getString("min");
+                forecast.more.info = condObject.getString("txt_d");
+                forecastList.add(forecast);
+            }
+            */
+//            Log.d("ljc_1",forecastList.toString());
+            Weather weather = new Gson().fromJson(weatherContent,Weather.class);
+//            weather.forecastList = forecastList;
+            return  weather;
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }
