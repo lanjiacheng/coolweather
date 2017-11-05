@@ -1,5 +1,6 @@
 package com.ljc.coolweather;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Build;
@@ -22,6 +23,7 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.ljc.coolweather.gson.Forecast;
 import com.ljc.coolweather.gson.Weather;
+import com.ljc.coolweather.service.AutoUpdateService;
 import com.ljc.coolweather.util.HttpUtil;
 import com.ljc.coolweather.util.Utility;
 
@@ -141,6 +143,7 @@ public class WeatherActivity extends AppCompatActivity {
     根据id请求城市天气信息
      */
     public void requeWeather(String weatherId) {
+        mWeatherId = weatherId;
         String weatherUrl = "http://guolin.tech/api/weather?cityid="+weatherId+"&key=bfb4f2a0762a44308190c97fe32dd2f6";
         HttpUtil.sendOkHttpRequest(weatherUrl, new Callback() {
             @Override
@@ -181,12 +184,13 @@ public class WeatherActivity extends AppCompatActivity {
     处理并展示Weather实体类中的数据
      */
     private void showWeatherInfo(Weather weather) {
+        if (weather!=null&&"ok".equals(weather.status)){
         String cityName = weather.basic.cityName;
         String updateTime = weather.basic.update.updateTime;
         String degree = weather.now.temperature+"℃";
         String weatherInfo = weather.now.more.info;
         titleCity.setText(cityName);
-        titleUpdateTime.setText(updateTime);
+        titleUpdateTime.setText(updateTime.substring(11));
         degreeText.setText(degree);
         weatherInfoText.setText(weatherInfo);
         forecastLayout.removeAllViews();
@@ -197,8 +201,6 @@ public class WeatherActivity extends AppCompatActivity {
             TextView infoText = (TextView)view.findViewById(R.id.info_text);    //并需要用该布局来获取指定控件
             TextView maxText = (TextView)view.findViewById(R.id.max_text);
             TextView minText = (TextView)view.findViewById(R.id.min_text);
-            Log.d("ljc_1",forecast.date);
-            Log.d("ljc_1",dateText.toString());
             dateText.setText(forecast.date);
             infoText.setText(forecast.more.info);
             maxText.setText(forecast.temperature.max);
@@ -216,5 +218,10 @@ public class WeatherActivity extends AppCompatActivity {
         carWashText.setText(carWash);
         sportText.setText(sport);
         weatherlayout.setVisibility(View.VISIBLE);
+            Intent intent = new Intent(this, AutoUpdateService.class);
+            startService(intent);
+        }else{
+            Toast.makeText(WeatherActivity.this,"获取天气信息失败",Toast.LENGTH_SHORT).show();
+        }
     }
 }
